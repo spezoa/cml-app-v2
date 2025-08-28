@@ -1,0 +1,29 @@
+.env
+# Env & secrets
+.env
+.env.*
+*.env
+.env.txt
+*.key
+*.pem
+*.pfx
+*.cer
+*.crt
+*.der
+*.p12
+*secret*
+*.secrets
+# Env & secrets
+.env
+.env.*
+*.env
+.env.txt
+*.key
+*.pem
+*.pfx
+*.cer
+*.crt
+*.der
+*.p12
+*secret*
+*.secrets
