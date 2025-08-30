@@ -1,48 +1,51 @@
 export const dynamic = 'force-dynamic';
-import { requirePerm } from "@/utils/authz";
-import { prisma } from "@/lib/db";
-import { redirect } from "next/navigation";
+import { requirePerm, requireUser } from "@/utils/authz";
+import { getSettings, setSetting } from "@/lib/settings";
 import { ForbiddenError } from "@/utils/errors";
+import { redirect } from "next/navigation";
 
-async function getSetting(key: string) {
-  const s = await prisma.setting.findUnique({ where: { key } });
-  return s?.value || "";
+async function saveSettings(formData: FormData) {
+  "use server";
+  await requirePerm("admin.settings.manage");
+  const user = await requireUser();
+  const name = String(formData.get("workshopName") || "");
+  const tz = String(formData.get("timezone") || "");
+  await setSetting("workshopName", name, user.id);
+  await setSetting("timezone", tz, user.id);
 }
 
 export default async function SettingsPage() {
   try {
-    await requirePerm("admin.settings.edit");
-  } catch (e: any) {
-    if (e instanceof ForbiddenError) {
-      if (e.message === "AUTH_REQUIRED") return redirect("/api/auth/signin?callbackUrl=/admin/settings");
-      return redirect("/403");
-    }
+    await requirePerm("admin.settings.manage");
+  } catch (e) {
+    if (e instanceof ForbiddenError) redirect("/403");
     throw e;
   }
-
-  const name = await getSetting("org.name");
-  const tz = await getSetting("org.tz");
-
-  async function save(formData: FormData) {
-    "use server";
-    const entries = ["org.name","org.tz"] as const;
-    for (const key of entries) {
-      const value = String(formData.get(key) || "");
-      await prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } });
-    }
-  }
+  const current = await getSettings(["workshopName", "timezone"]);
+  const tz = current["timezone"] ?? "America/Santiago";
+  const name = current["workshopName"] ?? "";
 
   return (
-    <form action={save} className="card max-w-xl space-y-4">
+    <form action={saveSettings} className="card max-w-lg grid gap-4">
+      <h1 className="text-xl font-semibold">Ajustes Generales</h1>
       <div>
-        <label className="block text-sm mb-1">Nombre del taller</label>
-        <input name="org.name" defaultValue={name} className="input" />
+        <label>Nombre del taller</label>
+        <input name="workshopName" defaultValue={name} placeholder="Ej. Taller Compañía 8" />
       </div>
       <div>
-        <label className="block text-sm mb-1">Zona horaria</label>
-        <input name="org.tz" defaultValue={tz} className="input" placeholder="America/Santiago" />
+        <label>Zona horaria</label>
+        <select name="timezone" defaultValue={tz}>
+          <option>America/Santiago</option>
+          <option>America/Lima</option>
+          <option>America/Bogota</option>
+          <option>America/Mexico_City</option>
+          <option>UTC</option>
+        </select>
       </div>
-      <button className="btn">Guardar</button>
+      <div className="flex gap-2">
+        <button className="btn-primary" type="submit">Guardar</button>
+        <button className="btn" type="reset">Cancelar</button>
+      </div>
     </form>
   );
 }

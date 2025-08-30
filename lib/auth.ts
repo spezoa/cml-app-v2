@@ -1,31 +1,39 @@
-import AzureADProvider from "next-auth/providers/azure-ad";
 import type { NextAuthOptions } from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/db";
+import AzureADProvider from "next-auth/providers/azure-ad";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
-  session: { strategy: "jwt" },
   providers: [
     AzureADProvider({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      tenantId: process.env.AZURE_AD_TENANT_ID!,
-      authorization: { params: { prompt: "login", scope: "openid profile email" } },
+      tenantId: process.env.AZURE_AD_TENANT_ID ?? "common",
     }),
   ],
+  session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile }) {
-      if (account?.provider === "azure-ad") {
-        // ensure email casing
-        if (token.email) token.email = String(token.email).toLowerCase();
-      }
+      // Guardamos el access_token si viene del proveedor
+      const at = (account as any)?.access_token;
+      if (at) (token as any).access_token = at;
+
+      // Guardamos email (si viene del perfil o ya estaba en el token)
+      const email = (profile as any)?.email ?? (token as any)?.email;
+      if (email) (token as any).email = String(email);
+
       return token;
     },
     async session({ session, token }) {
-      (session as any).access_token = (token as any).access_token;
-      if (token.email && session.user) session.user.email = String(token.email);
+      // Pasar access_token al objeto de sesión
+      (session as any).access_token = (token as any)?.access_token;
+
+      // Proteger session.user y setear email si existe
+      const email = (token as any)?.email;
+      if (email) {
+        (session as any).user = (session as any).user ?? {};
+        (session as any).user.email = String(email);
+      }
+
       return session;
     },
-  }
+  },
 };
