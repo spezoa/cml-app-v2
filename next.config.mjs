@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: { serverActions: { allowedOrigins: ["localhost:3000"] } }
+  async redirects() {
+    return [
+      { source: "/", destination: "/newui", permanent: false },
+    ];
+  },
 };
-export default nextConfig;
+module.exports = nextConfig;
