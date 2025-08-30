@@ -1,9 +1,16 @@
 import { requirePerm } from "@/utils/authz";
 import dynamic from "next/dynamic";
+import { redirect } from "next/navigation";
+import { ForbiddenError } from "@/utils/errors";
 
 const RbacClient = dynamic(() => import("@/components/admin/RbacClient"), { ssr: false });
 
 export default async function RBACPage() {
-  await requirePerm("admin.rbac.manage");
+  try {
+    await requirePerm("admin.rbac.manage");
+  } catch (e) {
+    if (e instanceof ForbiddenError) redirect("/403");
+    throw e;
+  }
   return <RbacClient />;
 }

@@ -1,16 +1,28 @@
 import { prisma } from "@/lib/db";
-export async function getUserPermissions(userId: string) {
-  const roles = await prisma.userRole.findMany({ where: { userId }, include: { role: { include: { perms: true } } } });
-  const perms = new Set<string>();
-  for (const r of roles) for (const rp of (r.role as any).perms) if (rp.allow) perms.add(rp.permCode);
-  return [...perms];
+
+export async function getUserPermissions(userId: string): Promise<string[]> {
+  const roles = await prisma.userRole.findMany({
+    where: { userId },
+    include: { role: { include: { perms: true } } },
+  });
+  const set = new Set<string>();
+  for (const r of roles) {
+    for (const p of r.role.perms) {
+      if (p.allow) set.add(p.permCode);
+    }
+  }
+  return Array.from(set);
 }
-export function can(perms: string[], needed: string) {
-  if (perms.includes(needed)) return true;
-  const parts = needed.split(".");
-  for (let i = parts.length - 1; i >= 1; i--) {
-    const pref = parts.slice(0, i).join(".");
-    if (perms.includes(pref + ".*")) return true;
+
+/** Wildcards: '*' or 'prefix.*' cover all under that prefix. */
+export function can(perms: Iterable<string>, needed: string): boolean {
+  const set = new Set(perms);
+  if (set.has("*") || set.has(needed)) return true;
+  for (const p of set) {
+    if (p.endsWith(".*")) {
+      const prefix = p.slice(0, -2);
+      if (needed === prefix || needed.startsWith(prefix + ".")) return true;
+    }
   }
   return false;
 }

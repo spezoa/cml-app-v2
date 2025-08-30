@@ -1,5 +1,7 @@
 import { requirePerm, requireUser } from "@/utils/authz";
 import { getSettings, setSetting } from "@/lib/settings";
+import { ForbiddenError } from "@/utils/errors";
+import { redirect } from "next/navigation";
 
 async function saveSettings(formData: FormData) {
   "use server";
@@ -12,7 +14,12 @@ async function saveSettings(formData: FormData) {
 }
 
 export default async function SettingsPage() {
-  await requirePerm("admin.settings.manage");
+  try {
+    await requirePerm("admin.settings.manage");
+  } catch (e) {
+    if (e instanceof ForbiddenError) redirect("/403");
+    throw e;
+  }
   const current = await getSettings(["workshopName", "timezone"]);
   const tz = current["timezone"] ?? "America/Santiago";
   const name = current["workshopName"] ?? "";
