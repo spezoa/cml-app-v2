@@ -7,8 +7,13 @@ import { ForbiddenError } from "@/utils/errors";
 export default async function AdminHome() {
   try {
     await requirePerm("admin.view");
-  } catch (e) {
-    if (e instanceof ForbiddenError) redirect("/403");
+  } catch (e: any) {
+    if (e instanceof ForbiddenError) {
+      if (e.message === "AUTH_REQUIRED") {
+        redirect("/api/auth/signin?callbackUrl=/admin");
+      }
+      redirect("/403");
+    }
     throw e;
   }
 
