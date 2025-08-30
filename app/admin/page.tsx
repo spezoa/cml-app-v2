@@ -1,43 +1,47 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
+
 import { requirePerm } from "@/utils/authz";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ForbiddenError } from "@/utils/errors";
+import Card from "@/components/ui/Card";
 
 export default async function AdminHome() {
   try {
     await requirePerm("admin.view");
   } catch (e: any) {
-    if (e instanceof ForbiddenError) {
-      if (e.message === "AUTH_REQUIRED") {
-        redirect("/api/auth/signin?callbackUrl=/admin");
-      }
-      redirect("/403");
-    }
+    if (e instanceof ForbiddenError) redirect("/403");
     throw e;
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-2">RBAC</h2>
-        <p className="text-sm text-gray-600">Roles, permisos y asignación por prefijo.</p>
-        <Link href="/admin/rbac" className="btn mt-4">Abrir</Link>
-      </div>
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-2">Ajustes (General)</h2>
-        <p className="text-sm text-gray-600">Zona horaria, unidades, branding.</p>
-        <Link href="/admin/settings" className="btn mt-4">Abrir</Link>
-      </div>
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-2">SLA y Reglas</h2>
-        <p className="text-sm text-gray-600">Prioridades, MTTA/MTTR, ruteo de tickets.</p>
-        <Link href="/admin/sla" className="btn mt-4">Abrir</Link>
-      </div>
-      <div className="card">
-        <h2 className="text-xl font-semibold mb-2">Plantillas</h2>
-        <p className="text-sm text-gray-600">Checklists NFPA 1910/1962/1932 — versionado.</p>
-        <Link href="/admin/templates" className="btn mt-4">Abrir</Link>
+    <div className="space-y-6">
+      <h1 className="text-xl font-semibold">Gestión de taller</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card
+          title="RBAC"
+          description="Roles, permisos y asignación por perfil."
+          href="/admin/rbac"
+        />
+
+        <Card
+          title="Ajustes (General)"
+          description="Zona horaria, unidades, branding."
+          // si aún no está implementado, lo dejas sin href o con disabled
+          disabled
+        />
+
+        <Card
+          title="SLA y Reglas"
+          description="Prioridades, MTTA/MTTR, ruteo de tickets."
+          disabled
+        />
+
+        <Card
+          title="Plantillas"
+          description="Checklists NFPA 1910/1962/1932 — versionado."
+          disabled
+        />
       </div>
     </div>
   );
