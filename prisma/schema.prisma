@@ -1,8 +1,30 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum TicketStatus { NEW TRIAGED IN_PROGRESS ON_HOLD RESOLVED CLOSED CANCELLED DUPLICATE REOPENED }
-enum Priority { P1 P2 P3 P4 }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TicketStatus {
+  NEW
+  TRIAGED
+  IN_PROGRESS
+  ON_HOLD
+  RESOLVED
+  CLOSED
+  CANCELLED
+  DUPLICATE
+  REOPENED
+}
+
+enum Priority {
+  P1
+  P2
+  P3
+  P4
+}
 
 model User {
   id        String   @id @default(cuid())
@@ -15,103 +37,159 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-model Role { id String @id @default(cuid()) name String @unique isSystem Boolean @default(false) users UserRole[] perms RolePermission[] }
-model Permission { code String @id }
+model Role {
+  id        String            @id @default(cuid())
+  name      String            @unique
+  isSystem  Boolean           @default(false)
+  users     UserRole[]
+  perms     RolePermission[]
+}
+
+model Permission {
+  code String @id
+}
+
 model RolePermission {
-  roleId String
+  roleId   String
   permCode String
-  allow Boolean @default(true)
-  role Role @relation(fields: [roleId], references: [id])
-  perm Permission @relation(fields: [permCode], references: [code])
+  allow    Boolean @default(true)
+
+  role     Role       @relation(fields: [roleId], references: [id])
+  perm     Permission @relation(fields: [permCode], references: [code])
+
   @@id([roleId, permCode])
 }
+
 model UserRole {
   userId String
   roleId String
-  user User @relation(fields: [userId], references: [id])
-  role Role @relation(fields: [roleId], references: [id])
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
   @@id([userId, roleId])
 }
 
 model Asset {
-  id String @id @default(cuid())
-  code String @unique
-  type String
-  brand String?
-  model String?
-  vin String?
-  serviceState String @default("IN_SERVICE")
-  subsystems Subsystem[]
-  tickets Ticket[]
-  workOrders WorkOrder[]
+  id           String      @id @default(cuid())
+  code         String      @unique
+  type         String
+  brand        String?
+  model        String?
+  vin          String?
+  serviceState String      @default("IN_SERVICE")
+  subsystems   Subsystem[]
+  tickets      Ticket[]
+  workOrders   WorkOrder[]
 }
+
 model Subsystem {
-  id String @id @default(cuid())
-  assetId String
-  type String
-  manufacturer String?
-  serial String?
-  asset Asset @relation(fields: [assetId], references: [id])
-  workOrders WorkOrder[]
-  tickets Ticket[]
+  id            String     @id @default(cuid())
+  assetId       String
+  type          String
+  manufacturer  String?
+  serial        String?
+  asset         Asset      @relation(fields: [assetId], references: [id])
+  workOrders    WorkOrder[]
+  tickets       Ticket[]
 }
 
 model Ticket {
-  id String @id @default(cuid())
-  code String @unique
-  title String
-  description String?
-  assetId String?
-  subsystemId String?
-  category String?
-  system String?
-  priority Priority @default(P3)
-  status TicketStatus @default(NEW)
-  queue String?
-  slaResponseMinutes Int?
+  id                   String       @id @default(cuid())
+  code                 String       @unique
+  title                String
+  description          String?
+  assetId              String?
+  subsystemId          String?
+  category             String?
+  system               String?
+  priority             Priority     @default(P3)
+  status               TicketStatus @default(NEW)
+  queue                String?
+  slaResponseMinutes   Int?
   slaResolutionMinutes Int?
-  openedById String
-  assigneeId String?
-  openedAt DateTime @default(now())
-  firstResponseAt DateTime?
-  resolvedAt DateTime?
-  closedAt DateTime?
-  asset Asset? @relation(fields: [assetId], references: [id])
-  subsystem Subsystem? @relation(fields: [subsystemId], references: [id])
-  openedBy User @relation("TicketOpenedBy", fields: [openedById], references: [id])
-  comments TicketComment[]
+  openedById           String
+  assigneeId           String?
+  openedAt             DateTime     @default(now())
+  firstResponseAt      DateTime?
+  resolvedAt           DateTime?
+  closedAt             DateTime?
+
+  asset       Asset?       @relation(fields: [assetId], references: [id])
+  subsystem   Subsystem?   @relation(fields: [subsystemId], references: [id])
+  openedBy    User         @relation("TicketOpenedBy", fields: [openedById], references: [id])
+  comments    TicketComment[]
   attachments TicketAttachment[]
-  workOrders WorkOrder[]
+  workOrders  WorkOrder[]
 }
+
 model TicketComment {
-  id String @id @default(cuid())
-  ticketId String
-  authorId String
-  body String
+  id        String   @id @default(cuid())
+  ticketId  String
+  authorId  String
+  body      String
   createdAt DateTime @default(now())
-  ticket Ticket @relation(fields: [ticketId], references: [id])
-  author User @relation(fields: [authorId], references: [id])
+
+  ticket    Ticket @relation(fields: [ticketId], references: [id])
+  author    User   @relation(fields: [authorId], references: [id])
 }
-model TicketAttachment { id String @id @default(cuid()) ticketId String url String kind String? meta Json? ticket Ticket @relation(fields: [ticketId], references: [id]) }
+
+model TicketAttachment {
+  id       String  @id @default(cuid())
+  ticketId String
+  url      String
+  kind     String?
+  meta     Json?
+
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+}
 
 model WorkOrder {
-  id String @id @default(cuid())
-  assetId String
+  id          String   @id @default(cuid())
+  assetId     String
   subsystemId String?
-  ticketId String?
-  origin String?
-  priority String?
-  status String? @default("OPEN")
-  openedAt DateTime @default(now())
-  closedAt DateTime?
-  severity String?
-  findings String?
-  asset Asset @relation(fields: [assetId], references: [id])
+  ticketId    String?
+  origin      String?
+  priority    String?
+  status      String?  @default("OPEN")
+  openedAt    DateTime @default(now())
+  closedAt    DateTime?
+  severity    String?
+  findings    String?
+
+  asset     Asset      @relation(fields: [assetId], references: [id])
   subsystem Subsystem? @relation(fields: [subsystemId], references: [id])
-  ticket Ticket? @relation(fields: [ticketId], references: [id])
+  ticket    Ticket?    @relation(fields: [ticketId], references: [id])
 }
 
-model Hose { id String @id @default(cuid()) assetId String? serial String @unique diameter String? lengthM Int? lastTest DateTime? testPressurePsi Int? result String? asset Asset? @relation(fields: [assetId], references: [id]) }
-model Ladder { id String @id @default(cuid()) assetId String? serial String @unique type String? lengthM Int? lastTest DateTime? result String? asset Asset? @relation(fields: [assetId], references: [id]) }
+model Hose {
+  id              String   @id @default(cuid())
+  assetId         String?
+  serial          String   @unique
+  diameter        String?
+  lengthM         Int?
+  lastTest        DateTime?
+  testPressurePsi Int?
+  result          String?
+  asset           Asset?   @relation(fields: [assetId], references: [id])
+}
 
-model AuditLog { id String @id @default(cuid()) at DateTime @default(now()) userId String? action String entity String? entityId String? meta Json? }
+model Ladder {
+  id        String   @id @default(cuid())
+  assetId   String?
+  serial    String   @unique
+  type      String?
+  lengthM   Int?
+  lastTest  DateTime?
+  result    String?
+  asset     Asset?   @relation(fields: [assetId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  at        DateTime @default(now())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  meta      Json?
+}
