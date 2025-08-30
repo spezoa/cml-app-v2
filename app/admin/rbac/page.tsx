@@ -207,32 +207,6 @@ export default async function RBACPage() {
             <Button type="submit">Procesar</Button>
           </form>
         </Card>
-        <Card title="Usuarios" description="Usuarios y roles asignados" ctaLabel=" ">
-  <div className="space-y-2">
-    {(users as any[]).map((u) => (
-      <div
-        key={u.id ?? u.email}
-        className="flex items-center justify-between border border-[#1f2937] rounded-md px-3 py-2 bg-[#0b1220]"
-      >
-        <div className="truncate">
-          <div className="font-medium">{u.email}</div>
-          {u.name ? (
-            <div className="text-xs text-slate-400">{u.name}</div>
-          ) : null}
-        </div>
-        <div className="flex gap-2">
-          {(u.roles ?? []).map((r: any) => (
-            <Badge key={r.roleId ?? r.id}>{r.role?.name ?? r.name}</Badge>
-          ))}
-        </div>
-      </div>
-    ))}
-    {(!users || users.length === 0) && (
-      <div className="text-sm text-slate-400">Aún no hay usuarios.</div>
-    )}
-  </div>
-</Card>
-
       </div>
     </div>
   );
