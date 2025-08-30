@@ -1,28 +1,27 @@
 import "./globals.css";
-import Link from "next/link";
-import { ReactNode } from "react";
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import SignInOut from "@/components/SignInOut";
+import Shell from "@/components/Shell";
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export const metadata: Metadata = {
+  title: "Taller de Bomberos",
+  description: "Gestión integral del taller",
+};
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await getServerSession(authOptions);
+
   return (
     <html lang="es">
-      <body>
-        <header className="bg-white border-b">
-          <div className="container py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="font-bold">Taller Bomberos</Link>
-              <nav className="flex gap-4 text-sm">
-                <Link href="/tickets">Tickets</Link>
-                <Link href="/admin">Admin</Link>
-              </nav>
-            </div>
-            <SignInOut session={session} />
-          </div>
-        </header>
-        <main className="container py-8">{children}</main>
+      <body className="bg-[#0f172a] text-[#e5e7eb]">
+        <Shell sessionEmail={session?.user?.email ?? null}>
+          {children}
+        </Shell>
       </body>
     </html>
   );
