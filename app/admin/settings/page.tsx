@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { requirePerm, requireUser } from "@/utils/authz";
 import { getSettings, setSetting } from "@/lib/settings";
 import { ForbiddenError } from "@/utils/errors";

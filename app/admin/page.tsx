@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { requirePerm } from "@/utils/authz";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
