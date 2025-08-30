@@ -12,11 +12,15 @@ export default async function TicketDetail({ params }: { params: { id: string }}
   const ticket = await getTicket(params.id);
   if (!ticket) return <div className="text-sm text-slate-400">Ticket no encontrado.</div>;
 
+  // 👇 Nuevo: evita capturar "ticket" dentro del server action
+  const ticketId = params.id;
+
   async function addComment(formData: FormData) {
     "use server";
     const body = String(formData.get("body") || "");
-    await fetch(`${process.env.NEXTAUTH_URL || ""}/api/tickets/${ticket.id}/comments`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+    await fetch(`${process.env.NEXTAUTH_URL || ""}/api/tickets/${ticketId}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ body }),
     });
   }
