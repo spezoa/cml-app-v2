@@ -1,0 +1,175 @@
+-- Habilita la función para defaults opcionales
+create extension if not exists pgcrypto;
+
+-- Tipos enum (si ya existen, no pasa nada)
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'TicketStatus') then
+    create type "TicketStatus" as enum ('NEW','TRIAGED','IN_PROGRESS','ON_HOLD','RESOLVED','CLOSED','CANCELLED','DUPLICATE','REOPENED');
+  end if;
+  if not exists (select 1 from pg_type where typname = 'Priority') then
+    create type "Priority" as enum ('P1','P2','P3','P4');
+  end if;
+end $$;
+
+-- Tablas (IF NOT EXISTS para evitar errores si algo ya está creado)
+create table if not exists "User" (
+  "id" text primary key default gen_random_uuid()::text,
+  "email" text unique not null,
+  "name" text,
+  "createdAt" timestamptz not null default now(),
+  "updatedAt" timestamptz not null default now()
+);
+
+create table if not exists "Role" (
+  "id" text primary key default gen_random_uuid()::text,
+  "name" text unique not null,
+  "isSystem" boolean not null default false
+);
+
+create table if not exists "Permission" (
+  "code" text primary key
+);
+
+create table if not exists "RolePermission" (
+  "roleId" text not null,
+  "permCode" text not null,
+  "allow" boolean not null default true,
+  primary key ("roleId","permCode"),
+  foreign key ("roleId") references "Role"("id") on delete cascade on update cascade,
+  foreign key ("permCode") references "Permission"("code") on delete cascade on update cascade
+);
+
+create table if not exists "UserRole" (
+  "userId" text not null,
+  "roleId" text not null,
+  primary key ("userId","roleId"),
+  foreign key ("userId") references "User"("id") on delete cascade on update cascade,
+  foreign key ("roleId") references "Role"("id") on delete cascade on update cascade
+);
+
+create table if not exists "Asset" (
+  "id" text primary key default gen_random_uuid()::text,
+  "code" text unique not null,
+  "type" text not null,
+  "brand" text,
+  "model" text,
+  "vin" text,
+  "serviceState" text not null default 'IN_SERVICE'
+);
+
+create table if not exists "Subsystem" (
+  "id" text primary key default gen_random_uuid()::text,
+  "assetId" text not null,
+  "type" text not null,
+  "manufacturer" text,
+  "serial" text,
+  foreign key ("assetId") references "Asset"("id") on delete cascade on update cascade
+);
+
+create table if not exists "Ticket" (
+  "id" text primary key default gen_random_uuid()::text,
+  "code" text unique not null,
+  "title" text not null,
+  "description" text,
+  "assetId" text,
+  "subsystemId" text,
+  "category" text,
+  "system" text,
+  "priority" "Priority" not null default 'P3',
+  "status" "TicketStatus" not null default 'NEW',
+  "queue" text,
+  "slaResponseMinutes" integer,
+  "slaResolutionMinutes" integer,
+  "openedById" text not null,
+  "assigneeId" text,
+  "openedAt" timestamptz not null default now(),
+  "firstResponseAt" timestamptz,
+  "resolvedAt" timestamptz,
+  "closedAt" timestamptz,
+  foreign key ("assetId") references "Asset"("id") on delete set null on update cascade,
+  foreign key ("subsystemId") references "Subsystem"("id") on delete set null on update cascade,
+  foreign key ("openedById") references "User"("id") on delete restrict on update cascade
+);
+
+create table if not exists "TicketComment" (
+  "id" text primary key default gen_random_uuid()::text,
+  "ticketId" text not null,
+  "authorId" text not null,
+  "body" text not null,
+  "createdAt" timestamptz not null default now(),
+  foreign key ("ticketId") references "Ticket"("id") on delete cascade on update cascade,
+  foreign key ("authorId") references "User"("id") on delete cascade on update cascade
+);
+
+create table if not exists "TicketAttachment" (
+  "id" text primary key default gen_random_uuid()::text,
+  "ticketId" text not null,
+  "url" text not null,
+  "kind" text,
+  "meta" jsonb,
+  foreign key ("ticketId") references "Ticket"("id") on delete cascade on update cascade
+);
+
+create table if not exists "WorkOrder" (
+  "id" text primary key default gen_random_uuid()::text,
+  "assetId" text not null,
+  "subsystemId" text,
+  "ticketId" text,
+  "origin" text,
+  "priority" text,
+  "status" text default 'OPEN',
+  "openedAt" timestamptz not null default now(),
+  "closedAt" timestamptz,
+  "severity" text,
+  "findings" text,
+  foreign key ("assetId") references "Asset"("id") on delete restrict on update cascade,
+  foreign key ("subsystemId") references "Subsystem"("id") on delete set null on update cascade,
+  foreign key ("ticketId") references "Ticket"("id") on delete set null on update cascade
+);
+
+create table if not exists "Hose" (
+  "id" text primary key default gen_random_uuid()::text,
+  "assetId" text,
+  "serial" text unique not null,
+  "diameter" text,
+  "lengthM" integer,
+  "lastTest" timestamptz,
+  "testPressurePsi" integer,
+  "result" text,
+  foreign key ("assetId") references "Asset"("id") on delete set null on update cascade
+);
+
+create table if not exists "Ladder" (
+  "id" text primary key default gen_random_uuid()::text,
+  "assetId" text,
+  "serial" text unique not null,
+  "type" text,
+  "lengthM" integer,
+  "lastTest" timestamptz,
+  "result" text,
+  foreign key ("assetId") references "Asset"("id") on delete set null on update cascade
+);
+
+create table if not exists "AuditLog" (
+  "id" text primary key default gen_random_uuid()::text,
+  "at" timestamptz not null default now(),
+  "userId" text,
+  "action" text not null,
+  "entity" text,
+  "entityId" text,
+  "meta" jsonb
+);
+
+create table if not exists "Setting" (
+  "key" text primary key,
+  "value" text,
+  "updatedAt" timestamptz not null default now(),
+  "updatedById" text,
+  foreign key ("updatedById") references "User"("id") on delete set null on update cascade
+);
+
+-- Índices útiles
+create index if not exists "Ticket_status_idx" on "Ticket"("status");
+create index if not exists "Ticket_priority_idx" on "Ticket"("priority");
+create index if not exists "WorkOrder_status_idx" on "WorkOrder"("status");
