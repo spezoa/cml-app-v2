@@ -46,7 +46,8 @@ model Role {
 }
 
 model Permission {
-  code String @id
+  code            String           @id
+  rolePermissions RolePermission[]
 }
 
 model RolePermission {
@@ -80,6 +81,8 @@ model Asset {
   subsystems   Subsystem[]
   tickets      Ticket[]
   workOrders   WorkOrder[]
+  hoses        Hose[]
+  ladders      Ladder[]
 }
 
 model Subsystem {
