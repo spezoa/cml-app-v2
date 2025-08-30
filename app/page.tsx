@@ -1,14 +1,35 @@
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+import Card from "@/components/ui/Card";
+
+export default function Home() {
   return (
-    <div className="card">
-      <h1 className="text-2xl font-semibold mb-2">Panel</h1>
-      <p>Starter v100.2 — Gestión de Taller de Bomberos (sin ARFF).</p>
-      <ul className="list-disc pl-6 mt-4 space-y-1 text-sm">
-        <li>SSO Office 365 (Microsoft Entra ID)</li>
-        <li>Tickets con prioridades/SLA (base)</li>
-        <li>RBAC con permisos por prefijo</li>
-        <li>Management Console (/admin)</li>
-      </ul>
+    <div className="space-y-6">
+      <h1 className="text-xl font-semibold">Inicio</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card
+          title="Tickets"
+          description="Ver y gestionar tickets del taller."
+          href="/tickets"
+          ctaLabel="Abrir tickets"
+        />
+        <Card
+          title="Nuevo ticket"
+          description="Crear una atención preventiva o correctiva."
+          href="/tickets/new"
+          ctaLabel="Crear"
+        />
+        <Card
+          title="Admin"
+          description="Roles, permisos, ajustes y plantillas."
+          href="/admin"
+          ctaLabel="Ir a Admin"
+        />
+        <Card
+          title="Reportes"
+          description="KPIs: backlog, MTTA, MTTR (próximamente)."
+          disabled
+        />
+      </div>
     </div>
   );
 }

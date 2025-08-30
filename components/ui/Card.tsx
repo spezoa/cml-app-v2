@@ -6,9 +6,11 @@ import { ReactNode } from "react";
 type CardProps = {
   title: string;
   description?: string;
-  href?: string;          // si viene, muestra botón “Abrir” que navega
-  disabled?: boolean;     // para dejar la tarjeta deshabilitada (igual estilo)
+  href?: string;          // si viene, el botón “Abrir” navega
+  disabled?: boolean;     // muestra mismo estilo, pero sin interacción
   icon?: ReactNode;
+  children?: ReactNode;   // contenido extra (metadatos, etc.)
+  ctaLabel?: string;      // texto del botón (default Abrir)
 };
 
 export default function Card({
@@ -17,9 +19,9 @@ export default function Card({
   href,
   disabled,
   icon,
+  children,
+  ctaLabel = "Abrir",
 }: CardProps) {
-  const Wrapper = href && !disabled ? Link : "div";
-
   return (
     <div
       className={[
@@ -32,9 +34,7 @@ export default function Card({
       ].join(" ")}
     >
       <div className="flex items-start gap-3">
-        {icon ? (
-          <div className="mt-1 text-slate-300">{icon}</div>
-        ) : null}
+        {icon ? <div className="mt-1 text-slate-300">{icon}</div> : null}
         <div>
           <h3 className="text-xl font-semibold text-slate-100">{title}</h3>
           {description ? (
@@ -43,26 +43,32 @@ export default function Card({
         </div>
       </div>
 
+      {/* contenido libre (metadatos, listas, etc.) */}
+      {children ? <div className="mt-3">{children}</div> : null}
+
       <div className="mt-4">
         {href ? (
-          // botón consistente
-          <Wrapper
-            href={href as any}
-            className={[
-              "inline-flex items-center rounded-lg",
-              "border border-[#1f2937] bg-[#0b1220]",
-              "px-4 py-2 text-sm",
-              disabled ? "pointer-events-none opacity-70" : "hover:bg-[#111827]",
-            ].join(" ")}
-          >
-            Abrir
-          </Wrapper>
+          disabled ? (
+            <button
+              disabled
+              className="inline-flex items-center rounded-lg border border-[#1f2937] bg-[#0b1220] px-4 py-2 text-sm opacity-70 cursor-not-allowed"
+            >
+              {ctaLabel}
+            </button>
+          ) : (
+            <Link
+              href={href}
+              className="inline-flex items-center rounded-lg border border-[#1f2937] bg-[#0b1220] px-4 py-2 text-sm hover:bg-[#111827]"
+            >
+              {ctaLabel}
+            </Link>
+          )
         ) : (
           <button
             disabled
             className="inline-flex items-center rounded-lg border border-[#1f2937] bg-[#0b1220] px-4 py-2 text-sm opacity-70 cursor-not-allowed"
           >
-            Abrir
+            {ctaLabel}
           </button>
         )}
       </div>
