@@ -20,14 +20,34 @@ async function getRBAC() {
     cache: "no-store",
     headers: { cookie },
   });
-  if (res.status === 401 || res.status === 403) return { roles: [], permissions: [], users: [] };
-  if (!res.ok) return { roles: [], permissions: [], users: [] };
+  if (res.status === 401 || res.status === 403) {
+    return { roles: [], permissions: [], users: [], rolePerms: [] };
+  }
+  if (!res.ok) {
+    return { roles: [], permissions: [], users: [], rolePerms: [] };
+  }
   const data = await res.json();
-  // Tolera estructuras distintas
+
+  // Normalizamos rolePerms si vienen embebidos en roles
+  let rolePerms = data.rolePerms ?? [];
+  if ((!rolePerms || rolePerms.length === 0) && Array.isArray(data.roles)) {
+    const acc: Array<{ roleId: string; permCode: string }> = [];
+    for (const r of data.roles) {
+      const permsArr = r?.perms ?? [];
+      for (const rp of permsArr) {
+        const code = rp?.perm?.code ?? rp?.permCode ?? rp?.code;
+        const roleId = rp?.roleId ?? r?.id;
+        if (roleId && code) acc.push({ roleId, permCode: String(code) });
+      }
+    }
+    rolePerms = acc;
+  }
+
   return {
     roles: data.roles ?? [],
     permissions: data.permissions ?? data.perms ?? [],
     users: data.users ?? [],
+    rolePerms,
   };
 }
 
@@ -40,7 +60,7 @@ export default async function RBACPage() {
     throw e;
   }
 
-  const { roles, permissions, users } = await getRBAC();
+  const { roles, permissions, users, rolePerms } = await getRBAC();
 
   // --- Server Actions (POST contra tus APIs existentes) ---
   async function createRole(formData: FormData) {
@@ -104,7 +124,6 @@ export default async function RBACPage() {
     revalidatePath("/admin/rbac");
   }
 
-  // NUEVO: quitar un rol específico a un usuario
   async function removeUserRole(formData: FormData) {
     "use server";
     const email = String(formData.get("email") || "").trim();
@@ -121,7 +140,6 @@ export default async function RBACPage() {
     revalidatePath("/admin/rbac");
   }
 
-  // NUEVO: asignar rol inline (idéntico a assignRole, pero separado para claridad)
   async function assignUserRoleInline(formData: FormData) {
     "use server";
     const email = String(formData.get("email") || "").trim();
@@ -138,7 +156,6 @@ export default async function RBACPage() {
     revalidatePath("/admin/rbac");
   }
 
-  // NUEVO: eliminar rol (bloquea isSystem)
   async function deleteRole(formData: FormData) {
     "use server";
     const roleId = String(formData.get("roleId") || "").trim();
@@ -155,7 +172,6 @@ export default async function RBACPage() {
     revalidatePath("/admin/rbac");
   }
 
-  // NUEVO: eliminar permiso
   async function deletePermission(formData: FormData) {
     "use server";
     const code = String(formData.get("code") || "").trim();
@@ -171,17 +187,50 @@ export default async function RBACPage() {
     revalidatePath("/admin/rbac");
   }
 
+  // NUEVOS: toggles de permisos por rol
+  async function grantRolePerm(formData: FormData) {
+    "use server";
+    const roleId = String(formData.get("roleId") || "").trim();
+    const code = String(formData.get("code") || "").trim();
+    if (!roleId || !code) return;
+
+    const cookie = cookies().toString();
+    const base = process.env.NEXTAUTH_URL || "";
+    await fetch(`${base}/api/admin/rbac`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ action: "grantPerm", roleId, code }),
+    });
+    revalidatePath("/admin/rbac");
+  }
+
+  async function revokeRolePerm(formData: FormData) {
+    "use server";
+    const roleId = String(formData.get("roleId") || "").trim();
+    const code = String(formData.get("code") || "").trim();
+    if (!roleId || !code) return;
+
+    const cookie = cookies().toString();
+    const base = process.env.NEXTAUTH_URL || "";
+    await fetch(`${base}/api/admin/rbac`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie },
+      body: JSON.stringify({ action: "revokePerm", roleId, code }),
+    });
+    revalidatePath("/admin/rbac");
+  }
+
+  // Helper local para saber si un rol tiene un permiso
+  const hasPerm = (roleId: string, code: string) =>
+    rolePerms?.some((rp: any) => rp.roleId === roleId && (rp.permCode ?? rp.code) === code);
+
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">RBAC</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Roles */}
-        <Card
-          title="Roles"
-          description="Crea y visualiza los roles del sistema."
-          ctaLabel=" "
-        >
+        <Card title="Roles" description="Crea y visualiza los roles del sistema." ctaLabel=" ">
           <div className="space-y-4">
             <ul className="space-y-2">
               {(roles as any[]).map((r) => (
@@ -193,8 +242,6 @@ export default async function RBACPage() {
                     <span className="font-medium">{r.name}</span>
                     <Badge>{r.isSystem ? "system" : "custom"}</Badge>
                   </div>
-
-                  {/* Botón eliminar rol (protegido si isSystem) */}
                   <form action={deleteRole} className="inline-flex">
                     <input type="hidden" name="roleId" value={r.id} />
                     <input type="hidden" name="isSystem" value={String(r.isSystem)} />
@@ -223,12 +270,8 @@ export default async function RBACPage() {
           </div>
         </Card>
 
-        {/* Permisos */}
-        <Card
-          title="Permisos"
-          description="Alta de códigos de permiso (p. ej. tickets.view, admin.view, *)."
-          ctaLabel=" "
-        >
+        {/* Permisos (CRUD simple) */}
+        <Card title="Permisos" description="Alta de códigos (ej: tickets.view, admin.view, *)." ctaLabel=" ">
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {(permissions as any[]).map((p: any) => {
@@ -266,25 +309,17 @@ export default async function RBACPage() {
           </div>
         </Card>
 
-        {/* Asignación de rol por email (form general) */}
-        <Card
-          title="Asignar rol a usuario"
-          description="Busca por email (SSO) y asigna un rol."
-          ctaLabel=" "
-        >
+        {/* Asignación de rol por email */}
+        <Card title="Asignar rol a usuario" description="Busca por email (SSO) y asigna un rol." ctaLabel=" ">
           <form action={assignRole} className="space-y-3">
             <Labeled label="Email del usuario">
               <Input name="email" type="email" placeholder="usuario@tuorg.com" required />
             </Labeled>
             <Labeled label="Rol">
               <Select name="roleId" defaultValue="">
-                <option value="" disabled>
-                  Selecciona un rol…
-                </option>
+                <option value="" disabled>Selecciona un rol…</option>
                 {(roles as any[]).map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
+                  <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </Select>
             </Labeled>
@@ -293,11 +328,7 @@ export default async function RBACPage() {
         </Card>
 
         {/* Carga masiva */}
-        <Card
-          title="Importación masiva"
-          description="Pega JSON con roles, permisos y asignaciones."
-          ctaLabel=" "
-        >
+        <Card title="Importación masiva" description="Pega JSON con roles, permisos y asignaciones." ctaLabel=" ">
           <form action={bulkImport} className="space-y-3">
             <Labeled label="JSON">
               <Textarea
@@ -314,68 +345,39 @@ export default async function RBACPage() {
           </form>
         </Card>
 
-        {/* Usuarios (con acciones inline) */}
-        <Card
-          title="Usuarios"
-          description="Usuarios y roles asignados"
-          ctaLabel=" "
-        >
+        {/* Usuarios (acciones inline) */}
+        <Card title="Usuarios" description="Usuarios y roles asignados" ctaLabel=" ">
           <div className="space-y-4">
             {(users as any[]).map((u) => {
-              const assignedIds = new Set(
-                (u.roles ?? []).map((r: any) => r.roleId ?? r.id)
-              );
-              const availableRoles = (roles as any[]).filter(
-                (r) => !assignedIds.has(r.id)
-              );
+              const assignedIds = new Set((u.roles ?? []).map((r: any) => r.roleId ?? r.id));
+              const availableRoles = (roles as any[]).filter((r) => !assignedIds.has(r.id));
 
               return (
-                <div
-                  key={u.id ?? u.email}
-                  className="border border-[#1f2937] rounded-xl p-3 bg-[#0b1220]"
-                >
+                <div key={u.id ?? u.email} className="border border-[#1f2937] rounded-xl p-3 bg-[#0b1220]">
                   <div className="flex items-start justify-between gap-3">
                     <div className="truncate">
                       <div className="font-medium">{u.email}</div>
-                      {u.name ? (
-                        <div className="text-xs text-slate-400">{u.name}</div>
-                      ) : null}
+                      {u.name ? <div className="text-xs text-slate-400">{u.name}</div> : null}
                     </div>
 
-                    {/* Asignar rol (selector + botón) */}
                     <form action={assignUserRoleInline} className="flex items-center gap-2">
                       <input type="hidden" name="email" value={u.email} />
-                      <Select
-                        name="roleId"
-                        defaultValue=""
-                        className="w-[200px]"
-                      >
-                        <option value="" disabled>
-                          Selecciona rol…
-                        </option>
+                      <Select name="roleId" defaultValue="" className="w-[200px]">
+                        <option value="" disabled>Selecciona rol…</option>
                         {availableRoles.map((r: any) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
+                          <option key={r.id} value={r.id}>{r.name}</option>
                         ))}
                       </Select>
-                      <Button type="submit" disabled={availableRoles.length === 0}>
-                        Asignar
-                      </Button>
+                      <Button type="submit" disabled={availableRoles.length === 0}>Asignar</Button>
                     </form>
                   </div>
 
-                  {/* Roles del usuario con botón para quitar */}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {(u.roles ?? []).map((r: any) => {
                       const rid = r.roleId ?? r.id;
                       const rname = r.role?.name ?? r.name;
                       return (
-                        <form
-                          key={rid}
-                          action={removeUserRole}
-                          className="inline-flex"
-                        >
+                        <form key={rid} action={removeUserRole} className="inline-flex">
                           <input type="hidden" name="email" value={u.email} />
                           <input type="hidden" name="roleId" value={rid} />
                           <span className="inline-flex items-center gap-1 rounded-md border border-[#1f2937] bg-[#0b1220] px-2 py-0.5 text-xs">
@@ -393,17 +395,60 @@ export default async function RBACPage() {
                       );
                     })}
                     {(u.roles ?? []).length === 0 && (
-                      <div className="text-xs text-slate-400">
-                        Sin roles asignados.
-                      </div>
+                      <div className="text-xs text-slate-400">Sin roles asignados.</div>
                     )}
                   </div>
                 </div>
               );
             })}
+            {(!users || users.length === 0) && <div className="text-sm text-slate-400">Aún no hay usuarios.</div>}
+          </div>
+        </Card>
 
-            {(!users || users.length === 0) && (
-              <div className="text-sm text-slate-400">Aún no hay usuarios.</div>
+        {/* NUEVO: Permisos por rol (toggle) */}
+        <Card title="Permisos por rol (toggle)" description="Activa/Desactiva permisos para cada rol" ctaLabel=" ">
+          <div className="space-y-6">
+            {(roles as any[]).map((role) => (
+              <div key={role.id} className="border border-[#1f2937] rounded-xl p-3 bg-[#0b1220]">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="font-medium">{role.name}</div>
+                    <Badge>{role.isSystem ? "system" : "custom"}</Badge>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                  {(permissions as any[]).map((p: any) => {
+                    const code = String(p?.code ?? p);
+                    const enabled = hasPerm(role.id, code);
+
+                    return (
+                      <form
+                        key={role.id + ":" + code}
+                        action={enabled ? revokeRolePerm : grantRolePerm}
+                        className="flex items-center justify-between border border-[#1f2937] rounded-md px-3 py-2"
+                      >
+                        <input type="hidden" name="roleId" value={role.id} />
+                        <input type="hidden" name="code" value={code} />
+                        <span className="truncate">{code}</span>
+                        <button
+                          type="submit"
+                          className={`rounded-md px-2 text-xs border border-[#1f2937] ${
+                            enabled ? "bg-emerald-700 hover:bg-emerald-800" : "hover:bg-[#111827]"
+                          }`}
+                          title={enabled ? "Desactivar" : "Activar"}
+                        >
+                          {enabled ? "On" : "Off"}
+                        </button>
+                      </form>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            {(!roles || roles.length === 0) && <div className="text-sm text-slate-400">Primero crea roles.</div>}
+            {(!permissions || permissions.length === 0) && (
+              <div className="text-sm text-slate-400">Primero agrega permisos.</div>
             )}
           </div>
         </Card>
