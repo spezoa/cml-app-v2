@@ -1,10 +1,10 @@
 export const dynamic = 'force-dynamic';
 import { requirePerm } from "@/utils/authz";
-import dynamic from "next/dynamic";
+import NextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { ForbiddenError } from "@/utils/errors";
 
-const RbacClient = dynamic(() => import("@/components/admin/RbacClient"), { ssr: false });
+const RbacClient = NextDynamic(() => import("@/components/admin/RbacClient"), { ssr: false });
 
 export default async function RBACPage() {
   try {
