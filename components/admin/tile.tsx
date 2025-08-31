@@ -5,7 +5,8 @@ import { ReactNode } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 type TileProps = {
-  href: string;
+  /** Hacer opcional */
+  href?: string;
   title: string;
   description?: string;
   icon?: ReactNode;
@@ -30,7 +31,11 @@ export function Tile({
   const Wrapper: any = disabled ? 'div' : Link;
 
   return (
-    <Wrapper {...(!disabled ? { href } : {})} aria-disabled={disabled ? true : undefined} className={cn('block', className)}>
+    <Wrapper
+      {...(!disabled ? { href: href ?? '#' } : {})}
+      aria-disabled={disabled ? true : undefined}
+      className={cn('block', className)}
+    >
       <Card className={cn('group transition-all hover:shadow-md hover:-translate-y-0.5', disabled && 'opacity-60 pointer-events-none')}>
         <CardHeader className="space-y-2">
           <div className="flex items-center justify-between">
