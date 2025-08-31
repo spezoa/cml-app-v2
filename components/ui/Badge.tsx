@@ -1,9 +1,18 @@
-"use client";
+// components/ui/badge.tsx
+import { HTMLAttributes } from "react";
 
-export default function Badge({ children }: { children: React.ReactNode }) {
+type BadgeProps = HTMLAttributes<HTMLSpanElement>;
+
+export function Badge({ className = "", ...props }: BadgeProps) {
   return (
-    <span className="inline-flex items-center rounded-md border border-[#1f2937] bg-[#0b1220] px-2 py-0.5 text-xs">
-      {children}
-    </span>
+    <span
+      className={
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs " +
+        "border-zinc-700 bg-zinc-900/50 text-zinc-200 " +
+        "dark:border-zinc-700 dark:bg-zinc-900/60 " +
+        className
+      }
+      {...props}
+    />
   );
 }
