@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
-import Card from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
+
 
 export default function Home() {
   return (

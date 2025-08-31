@@ -6,11 +6,8 @@ import { revalidatePath } from "next/cache";
 
 import { requirePerm } from "@/utils/authz";
 import { ForbiddenError } from "@/utils/errors";
-
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Input, Select, Textarea, Labeled } from "@/components/ui/Field";
-import Badge from "@/components/ui/Badge";
 
 // ---- helpers ----
 async function getRBAC() {

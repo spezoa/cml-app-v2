@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { requirePerm } from "@/utils/authz";
 import { redirect } from "next/navigation";
 import { ForbiddenError } from "@/utils/errors";
-import Card from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
+
 
 export default async function AdminHome() {
   try {
