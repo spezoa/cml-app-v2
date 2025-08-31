@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { tile } from '@/components/admin/tile';
+import { Tile } from '@/components/admin/tile';
 
 export default function AdminHome() {
   return (
