@@ -1,0 +1,43 @@
+name: deps-audit
+on:
+  workflow_dispatch:        # permite ejecutarlo a mano
+  push:
+    branches: [ main ]      # y también en cada push a main
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # Instala deps de forma determinística. Si NO tienes package-lock.json, cambia a "npm install".
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      # 1) Unused/missing deps
+      - name: Depcheck (unused/missing)
+        run: npx depcheck --json > depcheck.json || true
+
+      # 2) Árbol completo de dependencias
+      - name: Full tree (npm ls)
+        run: npm ls --all --json > npm-ls.json || true
+
+      # Sube los reportes como artefacto descargable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deps-report
+          path: |
+            package.json
+            package-lock.json
+            depcheck.json
+            npm-ls.json
