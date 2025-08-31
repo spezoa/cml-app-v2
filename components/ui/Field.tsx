@@ -1,30 +1,26 @@
+
 import * as React from "react";
 
-export interface FieldProps {
-  /** Label del campo */
-  label?: string;
-  /** id del input al que apunta el label (para accesibilidad) */
-  htmlFor?: string;
-  /** Marca el campo como requerido (añade asterisco y aria-required) */
-  required?: boolean;
-  /** Texto de ayuda bajo el campo */
-  hint?: React.ReactNode;
-  /** Mensaje de error bajo el campo (tiene prioridad sobre hint) */
-  error?: React.ReactNode;
-  /** Clases extra para el contenedor */
-  className?: string;
-  /** Contenido del campo (inputs, selects, etc.) */
-  children: React.ReactNode;
-}
-
+/** Utility to join class names */
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-/** 
- * Field: contenedor simple para label + control + hint/error.
- * No fuerza 'use client', así que puede usarse tanto en Server como Client Components.
- */
+/** Base classes for inputs to match the new UI */
+const baseControl =
+  "w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400 dark:placeholder:text-gray-500";
+
+/** FIELD CONTAINER (label + control + hint/error) */
+export interface FieldProps {
+  label?: string;
+  htmlFor?: string;
+  required?: boolean;
+  hint?: React.ReactNode;
+  error?: React.ReactNode;
+  className?: string;
+  children: React.ReactNode;
+}
+
 export function Field({
   label,
   htmlFor,
@@ -58,7 +54,6 @@ export function Field({
         </label>
       ) : null}
 
-      {/* Slot para el control */}
       <div
         aria-describedby={error ? errorId : hint ? hintId : undefined}
         aria-invalid={error ? true : undefined}
@@ -66,7 +61,6 @@ export function Field({
         {children}
       </div>
 
-      {/* Error o hint */}
       {error ? (
         <p id={errorId} className="text-xs text-red-600 dark:text-red-400">
           {error}
@@ -80,6 +74,105 @@ export function Field({
   );
 }
 
-export type { FieldProps as IFieldProps };
+/** INPUT */
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  invalid?: boolean;
+};
 
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, invalid, ...props }, ref) => (
+    <input
+      ref={ref}
+      className={cx(
+        baseControl,
+        invalid && "border-red-500 focus:ring-red-500",
+        className
+      )}
+      aria-invalid={invalid || undefined}
+      {...props}
+    />
+  )
+);
+Input.displayName = "Input";
+
+/** TEXTAREA */
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  invalid?: boolean;
+};
+
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, invalid, rows = 4, ...props }, ref) => (
+    <textarea
+      ref={ref}
+      rows={rows}
+      className={cx(
+        baseControl,
+        "min-h-[100px]",
+        invalid && "border-red-500 focus:ring-red-500",
+        className
+      )}
+      aria-invalid={invalid || undefined}
+      {...props}
+    />
+  )
+);
+Textarea.displayName = "Textarea";
+
+/** SELECT */
+export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
+  invalid?: boolean;
+};
+
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ className, invalid, children, ...props }, ref) => (
+    <select
+      ref={ref}
+      className={cx(
+        baseControl,
+        "pr-8",
+        invalid && "border-red-500 focus:ring-red-500",
+        className
+      )}
+      aria-invalid={invalid || undefined}
+      {...props}
+    >
+      {children}
+    </select>
+  )
+);
+Select.displayName = "Select";
+
+/** LABELED: syntactic sugar -> <Labeled label="..." htmlFor="id"><Input id="id" .../></Labeled> */
+export interface LabeledProps
+  extends Omit<FieldProps, "children"> {
+  children: React.ReactNode;
+}
+
+export function Labeled({
+  label,
+  htmlFor,
+  required,
+  hint,
+  error,
+  className,
+  children,
+}: LabeledProps) {
+  return (
+    <Field
+      label={label}
+      htmlFor={htmlFor}
+      required={required}
+      hint={hint}
+      error={error}
+      className={className}
+    >
+      {children}
+    </Field>
+  );
+}
+
+/** Default export for backward compatibility */
 export default Field;
+
+/** Re-exports of types */
+export type { FieldProps as IFieldProps };
