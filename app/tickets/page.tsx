@@ -53,3 +53,9 @@ export default async function TicketsPage() {
     </div>
   );
 }
+
+import TicketsList from '@/components/tickets/TicketsList';
+
+export default function Page() {
+  return <TicketsList />;
+}

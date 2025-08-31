@@ -26,3 +26,15 @@ export default async function RootLayout({
     </html>
   );
 }
+
+import AppProviders from "./providers";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es" suppressHydrationWarning>
+      <body>
+        <AppProviders>{children}</AppProviders>
+      </body>
+    </html>
+  );
+}
