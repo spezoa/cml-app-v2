@@ -1,46 +1,33 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-import { requirePerm } from "@/utils/authz";
-import { redirect } from "next/navigation";
-import { ForbiddenError } from "@/utils/errors";
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
+import { Tile } from '@/components/admin/Tile';
 
-
-export default async function AdminHome() {
-  try {
-    await requirePerm("admin.view");
-  } catch (e: any) {
-    if (e instanceof ForbiddenError) redirect("/403");
-    throw e;
-  }
-
+export default function AdminHome() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Gestión de taller</h1>
+    <div className="container mx-auto max-w-6xl px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Consola de Administración</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Configura la aplicación, roles y permisos.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card
-          title="RBAC"
-          description="Roles, permisos y asignación por perfil."
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <Tile
+          title="Roles y permisos"
+          description="Gestiona RBAC (roles, permisos, asignaciones)."
           href="/admin/rbac"
         />
 
-        <Card
-          title="Ajustes (General)"
+        <Tile
+          title="Parámetros"
           description="Zona horaria, unidades, branding."
-          // si aún no está implementado, lo dejas sin href o con disabled
           disabled
         />
 
-        <Card
-          title="SLA y Reglas"
-          description="Prioridades, MTTA/MTTR, ruteo de tickets."
-          disabled
-        />
-
-        <Card
-          title="Plantillas"
-          description="Checklists NFPA 1910/1962/1932 — versionado."
+        <Tile
+          title="Usuarios"
+          description="Alta/baja, asignación de roles (próximamente)."
           disabled
         />
       </div>
