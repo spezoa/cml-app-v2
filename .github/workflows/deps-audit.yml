@@ -1,66 +1,43 @@
-name: deps-audit
+name: Dependencies Audit
+
 on:
-  workflow_dispatch:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Detecta si existe package-lock.json
-      - name: Detect lockfile
-        id: lock
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Ensure lockfile
         run: |
           if [ -f package-lock.json ]; then
-            echo "haslock=true" >> $GITHUB_OUTPUT
+            echo "Lockfile exists."
           else
-            echo "haslock=false" >> $GITHUB_OUTPUT
+            echo "Lockfile missing. Generating with npm i --package-lock-only"
+            npm i --package-lock-only
           fi
 
-      # Con lockfile: usa cache de npm
-      - name: Setup Node (cached)
-        if: steps.lock.outputs.haslock == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
-
-      # Sin lockfile: sin cache
-      - name: Setup Node (no cache)
-        if: steps.lock.outputs.haslock == 'false'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      # Instala deps; usa npm ci si hay lockfile, si no npm install
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            npm ci --no-audit --no-fund
+            npm ci
           else
-            npm install --no-audit --no-fund
+            npm i
           fi
 
-      # Depcheck: detecta unused/missing deps (no falla el job si algo sale)
-      - name: Depcheck (unused/missing)
-        run: npx depcheck --json > depcheck.json || true
+      - name: Check import paths (case/missing)
+        run: npm run -s check:imports
 
-      # Árbol completo de dependencias
-      - name: Full tree (npm ls)
-        run: npm ls --all --json > npm-ls.json || true
-
-      # Sube artefactos incluso si hubo warnings en pasos anteriores
-      - name: Upload reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: deps-report
-          path: |
-            package.json
-            package-lock.json
-            depcheck.json
-            npm-ls.json
+      - name: Audit (high & critical only)
+        run: npm audit --audit-level=high || true
