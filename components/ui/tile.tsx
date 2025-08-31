@@ -1,59 +1,62 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ReactNode } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import * as React from "react";
+import Link from "next/link";
 
-type TileProps = {
-  href: string;
+function cx(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(" ");
+}
+
+export type TileProps = {
   title: string;
   description?: string;
-  icon?: ReactNode;
-  badge?: ReactNode;
-  disabled?: boolean;
+  href?: string;          // opcional: si falta o disabled=true, se renderiza como <div>
+  icon?: React.ReactNode;
+  disabled?: boolean;     // <-- NUEVO
   className?: string;
 };
 
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
-
-export function Tile({
-  href,
+export default function Tile({
   title,
   description,
+  href,
   icon,
-  badge,
   disabled,
   className,
 }: TileProps) {
-  const Wrapper: any = disabled ? 'div' : Link;
+  const base =
+    "rounded-2xl border bg-card shadow-sm p-5 transition relative";
+  const interactive =
+    "hover:shadow-md hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring";
+  const disabledCls = "opacity-55 cursor-not-allowed pointer-events-none";
+
+  const content = (
+    <div className="flex items-start gap-4">
+      {icon ? <div className="text-muted-foreground mt-1">{icon}</div> : null}
+      <div className="space-y-1">
+        <h3 className="text-base font-medium leading-none">{title}</h3>
+        {description ? (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  if (disabled || !href) {
+    return (
+      <div
+        className={cx(base, disabled ? disabledCls : "", className)}
+        aria-disabled={disabled ? true : undefined}
+        role="link"
+      >
+        {content}
+      </div>
+    );
+  }
 
   return (
-    <Wrapper
-      {...(!disabled ? { href } : {})}
-      aria-disabled={disabled ? true : undefined}
-      className={cn('block', className)}
-    >
-      <Card className={cn(
-        'group transition-all hover:shadow-md hover:-translate-y-0.5',
-        disabled && 'opacity-60 pointer-events-none'
-      )}>
-        <CardHeader className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {icon && <span className="text-xl">{icon}</span>}
-              <CardTitle className="text-base">{title}</CardTitle>
-            </div>
-            {badge}
-          </div>
-          {description && (
-            <CardDescription className="line-clamp-2">
-              {description}
-            </CardDescription>
-          )}
-        </CardHeader>
-      </Card>
-    </Wrapper>
+    <Link href={href} className={cx(base, interactive, className)}>
+      {content}
+    </Link>
   );
 }

@@ -1,6 +1,11 @@
-export * from './button';
-export * from './card';
-export { Badge } from "./badge";
+export { default as Tile } from "./Tile";
 export { Button } from "./button";
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
-// ... deja aquí el resto de exports que ya tengas
+export { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./card";
+export { Badge } from "./badge";
+export {
+  default as Field,
+  Input,
+  Select,
+  Textarea,
+  Labeled,
+} from "./Field";
