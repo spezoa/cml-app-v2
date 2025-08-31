@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { Tile } from '@/components/admin/tile';
+import { Tile, Button, Card, CardHeader, CardTitle, CardContent, Badge, Field, Input, Select, Textarea, Labeled } from "@/components/ui";
 
 export default function AdminHome() {
   return (
