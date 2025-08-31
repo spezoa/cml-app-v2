@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Input, Textarea, Select, Labeled } from "@/components/ui/Field";
 
 export default function NewTicket() {

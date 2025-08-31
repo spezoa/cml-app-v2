@@ -1,8 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { cookies } from "next/headers";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Textarea } from "@/components/ui/Field";
 
 async function getTicket(id: string) {
