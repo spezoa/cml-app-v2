@@ -1,0 +1,10 @@
+name: json-validate
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON
+        run: |
+          npm_config_yes=true npx -y jsonlint -q package.json
