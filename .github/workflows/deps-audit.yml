@@ -1,8 +1,8 @@
 name: deps-audit
 on:
-  workflow_dispatch:        # permite ejecutarlo a mano
+  workflow_dispatch:
   push:
-    branches: [ main ]      # y también en cada push a main
+    branches: [ main ]
 
 jobs:
   audit:
@@ -10,12 +10,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      # Detecta si existe package-lock.json
+      - name: Detect lockfile
+        id: lock
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "haslock=true" >> $GITHUB_OUTPUT
+          else
+            echo "haslock=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Con lockfile: usa cache de npm
+      - name: Setup Node (cached)
+        if: steps.lock.outputs.haslock == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
-      # Instala deps de forma determinística. Si NO tienes package-lock.json, cambia a "npm install".
+      # Sin lockfile: sin cache
+      - name: Setup Node (no cache)
+        if: steps.lock.outputs.haslock == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Instala deps; usa npm ci si hay lockfile, si no npm install
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
@@ -24,16 +45,18 @@ jobs:
             npm install --no-audit --no-fund
           fi
 
-      # 1) Unused/missing deps
+      # Depcheck: detecta unused/missing deps (no falla el job si algo sale)
       - name: Depcheck (unused/missing)
         run: npx depcheck --json > depcheck.json || true
 
-      # 2) Árbol completo de dependencias
+      # Árbol completo de dependencias
       - name: Full tree (npm ls)
         run: npm ls --all --json > npm-ls.json || true
 
-      # Sube los reportes como artefacto descargable
-      - uses: actions/upload-artifact@v4
+      # Sube artefactos incluso si hubo warnings en pasos anteriores
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: deps-report
           path: |
