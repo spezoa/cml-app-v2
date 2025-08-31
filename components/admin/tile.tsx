@@ -2,7 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { ReactNode } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tile, Button, Card, CardHeader, CardTitle, CardContent, Badge, Field, Input, Select, Textarea, Labeled } from "@/components/ui";
 
 type TileProps = {
   /** Hacer opcional */

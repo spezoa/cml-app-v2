@@ -1,4 +1,3 @@
-// components/ui/badge.tsx
 import { HTMLAttributes } from "react";
 
 type BadgeProps = HTMLAttributes<HTMLSpanElement>;
