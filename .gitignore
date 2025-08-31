@@ -13,7 +13,7 @@
 *.p12
 *secret*
 *.secrets
-# Env & secrets
+# Env & secrets varios
 .env
 .env.*
 *.env
