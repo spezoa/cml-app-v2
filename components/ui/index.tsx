@@ -1,6 +1,8 @@
 // components/ui/index.ts
-export { default as Tile } from "./tile"; // 👈 archivo en minúsculas
+export { default as Tile } from "./tile";
 export { Button } from "./button";
 export { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./card";
 export { Badge } from "./badge";
-export { default as Field, Input, Select, Textarea, Labeled } from "./Field";
+
+// Ahora el archivo es minúscula
+export { default as Field, Input, Select, Textarea, Labeled } from "./field";
