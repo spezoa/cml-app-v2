@@ -10,9 +10,9 @@ function cx(...parts: Array<string | false | null | undefined>) {
 export type TileProps = {
   title: string;
   description?: string;
-  href?: string;          // opcional: si falta o disabled=true, se renderiza como <div>
+  href?: string;
   icon?: React.ReactNode;
-  disabled?: boolean;     // <-- NUEVO
+  disabled?: boolean;
   className?: string;
 };
 
@@ -24,8 +24,7 @@ export default function Tile({
   disabled,
   className,
 }: TileProps) {
-  const base =
-    "rounded-2xl border bg-card shadow-sm p-5 transition relative";
+  const base = "rounded-2xl border bg-card shadow-sm p-5 transition relative";
   const interactive =
     "hover:shadow-md hover:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-ring";
   const disabledCls = "opacity-55 cursor-not-allowed pointer-events-none";
