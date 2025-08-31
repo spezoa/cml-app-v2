@@ -1,10 +1,8 @@
-'use client';
-
-import * as React from 'react';
-import Link from 'next/link';
+import * as React from "react";
+import Link from "next/link";
 
 function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 type BaseDivProps = React.HTMLAttributes<HTMLDivElement>;
@@ -25,19 +23,19 @@ type ExtraProps = {
 export type CardProps = BaseDivProps & ExtraProps;
 
 const baseCard =
-  'rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-900/60';
+  "rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-900/60";
 
-const headerCls = 'p-4 md:p-6 border-b border-gray-100 dark:border-gray-800';
-const contentCls = 'p-4 md:p-6';
-const footerCls = 'p-4 md:p-6 border-t border-gray-100 dark:border-gray-800';
-const titleCls = 'text-base font-semibold tracking-tight';
-const descCls = 'text-sm text-gray-600 dark:text-gray-400';
+const headerCls = "p-4 md:p-6 border-b border-gray-100 dark:border-gray-800";
+const contentCls = "p-4 md:p-6";
+const footerCls = "p-4 md:p-6 border-t border-gray-100 dark:border-gray-800";
+const titleCls = "text-base font-semibold tracking-tight";
+const descCls = "text-sm text-gray-600 dark:text-gray-400";
 
 /**
- * Card: componente unificado.
- * - Si NO pasas `title`/`description`/`href`: actúa como contenedor y renderiza `children` tal cual.
- * - Si pasas `title`/`description`: renderiza header uniforme.
- * - Si además pasas `href`: envuelve el Card en <Link> para tile clickable.
+ * Card unificado:
+ * - Sin `title`/`description`/`href`: actúa como contenedor.
+ * - Con `title`/`description`: renderiza header uniforme.
+ * - Con `href`: envuelve en <Link> (tile clickable).
  */
 export function Card(props: CardProps) {
   const {
@@ -51,8 +49,10 @@ export function Card(props: CardProps) {
     ...rest
   } = props;
 
+  const containerCls = cn(baseCard, "group", className);
+
   const Inner = (
-    <div className={cn(baseCard, className)} {...rest}>
+    <div className={containerCls} {...rest}>
       {(title || description || icon) && (
         <div className={headerCls}>
           <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export function Card(props: CardProps) {
       {(ctaLabel || href) && (
         <div className={footerCls}>
           <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-            <span>{ctaLabel ?? 'Abrir'}</span>
+            <span>{ctaLabel ?? "Abrir"}</span>
             <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </div>
         </div>
@@ -80,10 +80,9 @@ export function Card(props: CardProps) {
     </div>
   );
 
-  // Si hay href, hacemos todo el bloque clickable
   if (href) {
     return (
-      <Link href={href} className="group block no-underline">
+      <Link href={href} className="block no-underline">
         {Inner}
       </Link>
     );
@@ -92,7 +91,6 @@ export function Card(props: CardProps) {
   return Inner;
 }
 
-// Primitivas opcionales por si en algún sitio las usas manualmente
 export function CardHeader(props: React.HTMLAttributes<HTMLDivElement>) {
   const { className, ...rest } = props;
   return <div className={cn(headerCls, className)} {...rest} />;
