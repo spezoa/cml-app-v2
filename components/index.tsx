@@ -1,5 +1,5 @@
 // components/index.ts
-export { Shell } from './Shell';
+export { Shell } from './layout/Shell';
 
 // Si te sirve, re-exporta también componentes de features
 export { default as TicketsList } from './tickets/TicketsList';
