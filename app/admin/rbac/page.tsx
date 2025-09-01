@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 import { requirePerm } from "@/utils/authz";
 import { ForbiddenError } from "@/utils/errors";
-import { Tile, Button, Card, CardHeader, CardTitle, CardContent, Badge, Field, Input, Select, Textarea, Labeled } from "@/components/ui";
+import { Tile, Button, Card, CardHeader, CardTitle, CardContent, Badge, Field, Input, Select, Textarea, Labeled } from "@/components";
 
 
 // ---- helpers ----

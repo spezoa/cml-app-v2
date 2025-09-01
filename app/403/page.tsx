@@ -7,7 +7,7 @@ import {
   CardContent,
   CardFooter,
   Button,
-} from "@/components/ui";
+} from "@/components";
 
 export default function ForbiddenPage() {
   return (
