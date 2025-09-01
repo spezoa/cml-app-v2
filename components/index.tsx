@@ -18,7 +18,7 @@ export {
 
 // OJO con el case: si tu archivo es `components/ui/Field.tsx` (mayúscula),
 // usa './ui/Field' EXACTO. Si es `field.tsx` en minúscula, usa './ui/field'.
-export { Field, Input, Select, Textarea, Labeled } from './ui/Field';
+export { Field, Input, Select, Textarea, Labeled } from './ui/field';
 
 // si tienes Badge:
 export { Badge } from './ui/badge';
