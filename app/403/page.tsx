@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Tile, Button, Card, CardHeader, CardTitle, CardContent, CardDescription, Badge, Field, Input, Select, Textarea, Labeled } from "@/components/ui";
+import { Tile, Button, Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription, Badge, Field, Input, Select, Textarea, Labeled } from "@/components/ui";
 
 
 export default function Page403() {

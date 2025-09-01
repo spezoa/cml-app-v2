@@ -1,7 +1,7 @@
 // components/ui/index.ts
 export { default as Tile } from "./tile";
 export { Button } from "./button";
-export {Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter} from "./card";
+export {Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent, CardFooter} from "./card";
 export { Badge } from "./badge";
 
 // Ahora el archivo es minúscula
