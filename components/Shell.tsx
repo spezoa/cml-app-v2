@@ -17,7 +17,7 @@ export type ShellProps = {
   className?: string;
 };
 
-export function Shell({
+export default function Shell({
   children,
   title,
   description,
