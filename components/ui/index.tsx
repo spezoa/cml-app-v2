@@ -8,9 +8,8 @@ export {
   CardContent,
   CardFooter,
 } from './card';
-export { default as Field, Input, Select, Textarea, Labeled } from './Field';
+export { default as Field, Input, Select, Textarea, Labeled } from './field';
 export { Badge } from './badge';
 export { Tile } from './tile';
 
-// Opcional (para no romper imports existentes tipo "@/components/ui"):
-// export { Shell } from '../layout/Shell';
+
