@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { Tile, Button, Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription, Badge, Field, Input, Select, Textarea, Labeled } from "@/components/ui";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Button,
+} from "@/components/ui";
 
-
-export default function Page403() {
+export default function ForbiddenPage() {
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-xl mx-auto p-6">
       <Card>
         <CardHeader>
           <CardTitle>Acceso denegado</CardTitle>
@@ -12,9 +19,7 @@ export default function Page403() {
         </CardHeader>
 
         <CardContent>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Contacta a un administrador para obtener acceso.
-          </p>
+          <p>Si crees que esto es un error, contacta a un administrador.</p>
         </CardContent>
 
         <CardFooter className="flex justify-end">
