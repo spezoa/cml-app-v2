@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AppProviders from "./providers";
-import Shell from "@/components/Shell";
+import Providers from "./providers";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Taller Bomberos",
-  description: "Gestión del taller",
+  description: "Backoffice",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body>
-        <AppProviders>
-          <Shell>{children}</Shell>
-        </AppProviders>
+    <html lang="es"  suppressHydrationWarning>
+      <body className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 antialiased">
+        <Providers>
+          <Navbar />
+          <main className="mx-auto max-w-6xl px-4 py-8">
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   );

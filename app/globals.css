@@ -2,12 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
-body { @apply bg-gray-50 text-gray-900; }
+/* Base light/dark using Tailwind */
+body { @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100; }
 .container { @apply max-w-6xl mx-auto px-4; }
-.card { @apply bg-white rounded-2xl shadow p-6; }
-.btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 border border-gray-300 hover:bg-gray-50; }
-.btn-primary { @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700; }
-.badge { @apply inline-flex items-center rounded-full text-xs px-2 py-0.5 border border-gray-300 bg-gray-100; }
-input, select, textarea { @apply border border-gray-300 rounded-lg px-3 py-2 w-full; }
-label { @apply text-sm font-medium text-gray-700; }
+
+/* Cards & buttons */
+.card { @apply rounded-2xl shadow border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900; }
+.btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 border border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800; }
+.btn-primary { @apply bg-indigo-600 text-white hover:bg-indigo-500; }
+.badge { @apply inline-flex items-center rounded-full text-xs px-2 py-0.5 border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800; }
+
+/* Form controls */
+input, select, textarea { @apply border border-gray-300 rounded-lg px-3 py-2 w-full bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700; }
+label { @apply text-sm font-medium text-gray-700 dark:text-gray-300; }
+
+/* Typography defaults */
+h1,h2,h3,h4,h5,h6 { @apply text-gray-900 dark:text-gray-100; }
+p,li,small,span,div { @apply text-gray-800 dark:text-gray-200; }
+strong,b { @apply text-gray-900 dark:text-white; }
