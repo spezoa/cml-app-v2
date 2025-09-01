@@ -21,7 +21,7 @@ export default function NewTicket() {
     });
     if (!res.ok) throw new Error("No se pudo crear");
     const { ticket } = await res.json();
-    redirect(`/newui/tickets/${ticket.id}`);
+    redirect(`/tickets/${ticket.id}`);
   }
 
   return (
