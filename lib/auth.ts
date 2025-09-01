@@ -36,4 +36,24 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+
+callbacks: {
+  async signIn({ profile, account }) {
+    const email = (profile as any)?.email || (profile as any)?.upn || (profile as any)?.preferred_username;
+    const domains = (process.env.ALLOWED_EMAIL_DOMAINS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    if (domains.length && email) {
+      const ok = domains.some(d => email.toLowerCase().endsWith('@' + d) || email.toLowerCase().endsWith(d));
+      if (!ok) return false;
+    }
+    const allowedTenant = process.env.AZURE_ALLOWED_TENANT || process.env.AZURE_AD_TENANT_ID;
+    try {
+      const idt = (account as any)?.id_token;
+      if (allowedTenant && idt) {
+        const tid = JSON.parse(Buffer.from(String(idt).split('.')[1], 'base64').toString('utf-8'))?.tid;
+        if (tid && allowedTenant !== 'common' && allowedTenant !== tid) return false;
+      }
+    } catch {}
+    return true;
+  },
+},
 };

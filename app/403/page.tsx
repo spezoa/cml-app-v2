@@ -1,33 +1,8 @@
-import Link from "next/link";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  Button,
-} from "@/components";
-
-export default function ForbiddenPage() {
+export default function Page403() {
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Acceso denegado</CardTitle>
-          <CardDescription>No tienes permisos para ver esta página</CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <p>Si crees que esto es un error, contacta a un administrador.</p>
-        </CardContent>
-
-        <CardFooter className="flex justify-end">
-          <Link href="/">
-            <Button variant="secondary">Ir al inicio</Button>
-          </Link>
-        </CardFooter>
-      </Card>
+    <div className="mx-auto max-w-md text-center py-24">
+      <h1 className="text-3xl font-semibold mb-2">403</h1>
+      <p className="text-gray-500">No tienes permisos para ver esta página.</p>
     </div>
   );
 }

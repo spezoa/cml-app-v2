@@ -1,5 +1,4 @@
 'use client';
-
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -15,7 +14,7 @@ export default function ThemeToggle() {
   return (
     <button
       aria-label="Cambiar tema"
-      className="inline-flex items-center rounded-xl px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+      className="inline-flex items-center rounded-xl px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
       onClick={() => setTheme(next)}
       title={current === 'dark' ? 'Cambiar a claro' : 'Cambiar a oscuro'}
     >

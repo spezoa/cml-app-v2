@@ -3,7 +3,7 @@
   "version": "100.2.0",
   "private": true,
   "engines": {
-    "node": ">=20.11.1 <21"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",

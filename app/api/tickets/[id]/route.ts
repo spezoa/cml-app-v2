@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { requirePerm } from "@/utils/authz";
 
 export async function GET(_req: Request, { params }: { params: { id: string }}) {
-  await requirePerm("ticket.view");
+  await requirePerm("tickets.view");
   const ticket = await prisma.ticket.findUnique({
     where: { id: params.id },
     include: { comments: { include: { author: true }, orderBy: { createdAt: "asc" } }, asset: true, subsystem: true }
@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: { id: string }}) 
 }
 
 export async function PUT(req: Request, { params }: { params: { id: string }}) {
-  await requirePerm("ticket.update");
+  await requirePerm("tickets.update");
   const data = await req.json();
   const updated = await prisma.ticket.update({
     where: { id: params.id },
