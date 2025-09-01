@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import RoleToggler from './RoleToggler';
 
 async function fetchData(userId: string) {
   const cookie = cookies().toString();
@@ -31,40 +32,13 @@ export default async function AssignRolesPage({ searchParams }: { searchParams: 
         {data.roles.map((r: any) => {
           const assigned = data.userRoleIds.includes(r.id);
           return (
-            <form key={r.id} action={`/api/admin/users/${userId}/roles`} method="post" className="flex items-center justify-between border rounded-lg p-3">
+            <div key={r.id} className="flex items-center justify-between border rounded-lg p-3">
               <div>
                 <div className="font-medium">{r.name}</div>
                 {r.isSystem && <div className="text-xs text-gray-500">Sistema</div>}
               </div>
-              {assigned ? (
-                <button formAction={`/api/admin/users/${userId}/roles`} formaction={`/api/admin/users/${userId}/roles`} formMethod="post" className="hidden" />
-              ) : null}
-              {assigned ? (
-                <button
-                  formAction={`/api/admin/users/${userId}/roles`}
-                  formMethod="dialog"
-                  className="h-9 px-3 rounded-md border"
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    await fetch(`/api/admin/users/${userId}/roles`, { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ roleId: r.id }) });
-                    location.reload();
-                  }}
-                >
-                  Quitar
-                </button>
-              ) : (
-                <button
-                  className="h-9 px-3 rounded-md bg-gray-900 text-white"
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    await fetch(`/api/admin/users/${userId}/roles`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ roleId: r.id }) });
-                    location.reload();
-                  }}
-                >
-                  Asignar
-                </button>
-              )}
-            </form>
+              <RoleToggler userId={data.user.id} roleId={r.id} assigned={assigned} />
+            </div>
           );
         })}
       </div>
