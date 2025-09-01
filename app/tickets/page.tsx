@@ -1,4 +1,4 @@
-import Shell from '@/components/Shell';
+import { Shell, TicketsList } from '@/components';
 import TicketsList from '@/components/tickets/TicketsList';
 
 export const dynamic = 'force-dynamic';
