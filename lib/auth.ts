@@ -6,54 +6,60 @@ export const authOptions: NextAuthOptions = {
     AzureADProvider({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      tenantId: process.env.AZURE_AD_TENANT_ID ?? "common",
+      tenantId: process.env.AZURE_AD_TENANT_ID || "common",
     }),
   ],
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // Guardamos el access_token si viene del proveedor
+      // Propaga tokens de Azure (si existen)
       const at = (account as any)?.access_token;
-      if (at) (token as any).access_token = at;
+      const idt = (account as any)?.id_token;
+      if (at) (token as any).accessToken = at;
+      if (idt) (token as any).idToken = idt;
 
-      // Guardamos email (si viene del perfil o ya estaba en el token)
-      const email = (profile as any)?.email ?? (token as any)?.email;
-      if (email) (token as any).email = String(email);
+      // Propaga email si viene en el perfil
+      const email = (profile as any)?.email || (profile as any)?.upn || (profile as any)?.preferred_username;
+      if (email) token.email = email;
 
       return token;
     },
     async session({ session, token }) {
-      // Pasar access_token al objeto de sesión
-      (session as any).access_token = (token as any)?.access_token;
+      // Adjunta tokens a la sesión (útil p/ Graph)
+      (session as any).accessToken = (token as any).accessToken;
+      (session as any).idToken = (token as any).idToken;
 
-      // Proteger session.user y setear email si existe
-      const email = (token as any)?.email;
-      if (email) {
-        (session as any).user = (session as any).user ?? {};
-        (session as any).user.email = String(email);
+      // Asegura email de usuario
+      if (token?.email && session.user) {
+        session.user.email = token.email as string;
       }
-
       return session;
     },
-  },
-
-callbacks: {
-  async signIn({ profile, account }) {
-    const email = (profile as any)?.email || (profile as any)?.upn || (profile as any)?.preferred_username;
-    const domains = (process.env.ALLOWED_EMAIL_DOMAINS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-    if (domains.length && email) {
-      const ok = domains.some(d => email.toLowerCase().endsWith('@' + d) || email.toLowerCase().endsWith(d));
-      if (!ok) return false;
-    }
-    const allowedTenant = process.env.AZURE_ALLOWED_TENANT || process.env.AZURE_AD_TENANT_ID;
-    try {
-      const idt = (account as any)?.id_token;
-      if (allowedTenant && idt) {
-        const tid = JSON.parse(Buffer.from(String(idt).split('.')[1], 'base64').toString('utf-8'))?.tid;
-        if (tid && allowedTenant !== 'common' && allowedTenant !== tid) return false;
+    async signIn({ profile, account }) {
+      // Filtro por dominio permitido (opcional)
+      const email = (profile as any)?.email || (profile as any)?.upn || (profile as any)?.preferred_username;
+      const domains = (process.env.ALLOWED_EMAIL_DOMAINS || "")
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      if (domains.length && email) {
+        const ok = domains.some((d) => email.toLowerCase().endsWith("@" + d) || email.toLowerCase().endsWith(d));
+        if (!ok) return false;
       }
-    } catch {}
-    return true;
+
+      // Filtro por tenant permitido (opcional)
+      const allowedTenant = process.env.AZURE_ALLOWED_TENANT || process.env.AZURE_AD_TENANT_ID;
+      try {
+        const idt = (account as any)?.id_token;
+        if (allowedTenant && idt && allowedTenant !== "common") {
+          const payload = JSON.parse(Buffer.from(String(idt).split(".")[1], "base64").toString("utf-8"));
+          const tid = payload?.tid;
+          if (tid && tid !== allowedTenant) return false;
+        }
+      } catch {
+        // Ignorar parsing errors: no bloquea el sign in
+      }
+      return true;
+    },
   },
-},
 };
