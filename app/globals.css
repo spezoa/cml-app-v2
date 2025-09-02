@@ -2,45 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens (CSS variables) to guarantee contrast */
-:root {
-  --bg: 245 245 247;   /* gray-50 */
-  --text: 17 24 39;    /* gray-900 */
-  --surface: 255 255 255; /* white */
-  --muted: 75 85 99;   /* gray-600 */
-  --border: 229 231 235; /* gray-200 */
-}
-:root.dark {
-  --bg: 3 7 18;        /* gray-950 */
-  --text: 243 244 246; /* gray-100 */
-  --surface: 17 24 39; /* gray-900 */
-  --muted: 209 213 219;/* gray-300 */
-  --border: 31 41 55;  /* gray-800 */
-}
-
-/* Base surfaces with tokens + Tailwind utilities for AA contrast */
-body {
-  @apply min-h-screen antialiased;
-  background-color: rgb(var(--bg));
-  color: rgb(var(--text));
-}
+:root { color-scheme: light; }
+body { @apply bg-gray-50 text-gray-900; }
 .container { @apply max-w-6xl mx-auto px-4; }
-.card { @apply rounded-2xl shadow border; background-color: rgb(var(--surface)); border-color: rgb(var(--border)); }
-.btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500; border-color: rgb(var(--border)); }
-.btn-primary { @apply text-white; background-color: rgb(79 70 229); } /* indigo-600 */
-.btn-primary:hover { background-color: rgb(99 102 241); } /* indigo-500 */
-.badge { @apply inline-flex items-center rounded-full text-xs px-2 py-0.5 border; background-color: rgb(var(--surface)); border-color: rgb(var(--border)); }
-
-/* Form controls */
-input, select, textarea {
-  @apply rounded-lg px-3 py-2 w-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500;
-  background-color: rgb(var(--surface));
-  color: rgb(var(--text));
-  border-color: rgb(var(--border));
-}
-label { @apply text-sm font-medium; color: rgb(var(--muted)); }
-
-/* Typography */
-h1,h2,h3,h4,h5,h6 { color: rgb(var(--text)); }
-p,li,small,span,div { color: rgb(var(--text)); }
-strong,b { color: rgb(var(--text)); }
+.card { @apply bg-white rounded-2xl shadow p-6; }
+.btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 border border-gray-300 hover:bg-gray-50; }
+.btn-primary { @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700; }
+.badge { @apply inline-flex items-center rounded-full text-xs px-2 py-0.5 border border-gray-300 bg-gray-100; }
+input, select, textarea { @apply border border-gray-300 rounded-lg px-3 py-2 w-full; }
+label { @apply text-sm font-medium text-gray-700; }

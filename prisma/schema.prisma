@@ -99,6 +99,9 @@ model Subsystem {
 }
 
 model Ticket {
+deletedAt           DateTime?
+  events              TicketEvent[]
+
   id                   String       @id @default(cuid())
   code                 String       @unique
   title                String
@@ -205,4 +208,30 @@ model Setting {
   updatedAt   DateTime @updatedAt
   updatedById String?
   updatedBy   User?    @relation(fields: [updatedById], references: [id])
+}
+
+
+enum TicketEventType {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  COMMENTED
+  ASSIGNED
+  DELETED
+}
+
+
+model TicketEvent {
+  id        String           @id @default(cuid())
+  ticketId  String
+  actorId   String?
+  type      TicketEventType
+  payload   Json?
+  createdAt DateTime         @default(now())
+
+  ticket    Ticket           @relation(fields: [ticketId], references: [id])
+  actor     User?            @relation(fields: [actorId], references: [id])
+
+  @@index([ticketId], name: "idx_ticket_event_ticket")
+  @@index([createdAt], name: "idx_ticket_event_created")
 }

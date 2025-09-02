@@ -12,31 +12,25 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // Propaga tokens de Azure (si existen)
       const at = (account as any)?.access_token;
       const idt = (account as any)?.id_token;
       if (at) (token as any).accessToken = at;
       if (idt) (token as any).idToken = idt;
 
-      // Propaga email si viene en el perfil
       const email = (profile as any)?.email || (profile as any)?.upn || (profile as any)?.preferred_username;
       if (email) token.email = email;
 
       return token;
     },
     async session({ session, token }) {
-      // Adjunta tokens a la sesión (útil p/ Graph)
       (session as any).accessToken = (token as any).accessToken;
       (session as any).idToken = (token as any).idToken;
-
-      // Asegura email de usuario
       if (token?.email && session.user) {
         session.user.email = token.email as string;
       }
       return session;
     },
     async signIn({ profile, account }) {
-      // Filtro por dominio permitido (opcional)
       const email = (profile as any)?.email || (profile as any)?.upn || (profile as any)?.preferred_username;
       const domains = (process.env.ALLOWED_EMAIL_DOMAINS || "")
         .split(",")
@@ -47,7 +41,6 @@ export const authOptions: NextAuthOptions = {
         if (!ok) return false;
       }
 
-      // Filtro por tenant permitido (opcional)
       const allowedTenant = process.env.AZURE_ALLOWED_TENANT || process.env.AZURE_AD_TENANT_ID;
       try {
         const idt = (account as any)?.id_token;
@@ -56,9 +49,7 @@ export const authOptions: NextAuthOptions = {
           const tid = payload?.tid;
           if (tid && tid !== allowedTenant) return false;
         }
-      } catch {
-        // Ignorar parsing errors: no bloquea el sign in
-      }
+      } catch {}
       return true;
     },
   },

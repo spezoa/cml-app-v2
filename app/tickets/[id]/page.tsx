@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { cookies } from "next/headers";
 import { Tile, Button, Card, CardHeader, CardTitle, CardContent, Badge, Field, Input, Select, Textarea, Labeled } from "@/components";
+import TicketTimeline from "@/components/tickets/TicketTimeline";
 
 
 async function getTicket(id: string) {
@@ -76,6 +77,17 @@ export default async function TicketDetail({ params }: { params: { id: string }}
           <div><span className="text-slate-400">Apertura:</span> {new Date(ticket.openedAt).toLocaleString()}</div>
         </div>
       </Card>
+
+
+<Card title="Historial">
+  {ticket.events?.length ? (
+    <TicketTimeline events={ticket.events as any} />
+  ) : (
+    <div className="text-sm text-muted-foreground">Sin actividades aún.</div>
+  )}
+</Card>
+
+
     </div>
   );
 }
