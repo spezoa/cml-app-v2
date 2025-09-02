@@ -54,39 +54,43 @@ export function Card({
   children,
   ...rest
 }: BaseDivProps & ExtraProps) {
-  const Inner = (
+  const content = (
     <div
       className={cn(baseCard, !disabled && hover, disabled && 'opacity-60 pointer-events-none', className)}
       aria-disabled={disabled || undefined}
       {...rest}
     >
-      {(title || description || icon) && (
+      {(title || description || icon) ? (
         <CardHeader>
           <div className="flex items-center gap-3">
-            {icon && <div className="text-xl">{icon}</div>}
+            {icon ? <div className="text-xl">{icon}</div> : null}
             <div className="min-w-0">
-              {title && <CardTitle className="truncate">{title}</CardTitle>}
-              {description && <CardDescription className="line-clamp-2">{description}</CardDescription>}
+              {title ? <CardTitle className="truncate">{title}</CardTitle> : null}
+              {description ? <CardDescription className="line-clamp-2">{description}</CardDescription> : null}
             </div>
           </div>
         </CardHeader>
+      ) : null}
 
-        {children && <CardContent>{children}</CardContent>}
+      {children ? <CardContent>{children}</CardContent> : null}
 
-        {(href || ctaLabel) && (
-          <CardFooter className="flex items-center justify-between">
-            <span className="text-muted-foreground">{ctaLabel || 'Abrir'}</span>
-            <span aria-hidden>→</span>
-          </CardFooter>
-        )}
-      </div>
+      {(href || ctaLabel) ? (
+        <CardFooter className="flex items-center justify-between">
+          <span className="text-muted-foreground">{ctaLabel || 'Abrir'}</span>
+          <span aria-hidden>→</span>
+        </CardFooter>
+      ) : null}
+    </div>
   );
 
   return href && !disabled ? (
-    <Link href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl">
-      {Inner}
+    <Link
+      href={href}
+      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+    >
+      {content}
     </Link>
   ) : (
-    Inner
+    content
   );
 }
