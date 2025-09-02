@@ -27,6 +27,8 @@ enum Priority {
 }
 
 model User {
+  eventsAuthored     TicketEvent[]   @relation("TicketEvent_actor")
+
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
@@ -230,7 +232,7 @@ model TicketEvent {
   createdAt DateTime         @default(now())
 
   ticket    Ticket           @relation(fields: [ticketId], references: [id])
-  actor     User?            @relation(fields: [actorId], references: [id])
+  actor     User?            @relation("TicketEvent_actor", fields: [actorId], references: [id])
 
   @@index([ticketId], name: "idx_ticket_event_ticket")
   @@index([createdAt], name: "idx_ticket_event_created")
