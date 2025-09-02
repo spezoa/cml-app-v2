@@ -1,24 +1,20 @@
 'use client';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 export default function ThemeToggle() {
   const { theme, setTheme, systemTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-
-  const current = theme === 'system' ? (systemTheme ?? 'dark') : (theme ?? 'dark');
-  const next = current === 'dark' ? 'light' : 'dark';
+  const current = theme === 'system' ? systemTheme : theme;
 
   return (
     <button
+      onClick={() => setTheme(current === 'dark' ? 'light' : 'dark')}
+      className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800"
       aria-label="Cambiar tema"
-      className="inline-flex items-center rounded-xl px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 bg-white text-gray-900 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-      onClick={() => setTheme(next)}
-      title={current === 'dark' ? 'Cambiar a claro' : 'Cambiar a oscuro'}
+      title="Cambiar tema"
     >
-      {current === 'dark' ? '🌙 Oscuro' : '☀️ Claro'}
+      <span className="hidden sm:inline">{current === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
+      <span aria-hidden>{current === 'dark' ? '🌞' : '🌙'}</span>
     </button>
   );
 }

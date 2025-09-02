@@ -27,3 +27,5 @@ export { Badge } from './ui/badge';
 
 // features
 export { default as TicketsList } from './tickets/TicketsList';
+
+export { default as ThemeToggle } from './ThemeToggle';
