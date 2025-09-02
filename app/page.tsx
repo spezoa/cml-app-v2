@@ -1,6 +1,5 @@
-export const dynamic = "force-dynamic";
-import { Tile, Button, Card, CardHeader, CardTitle, CardContent, Badge, Field, Input, Select, Textarea, Labeled } from "@/components";
-
+export const dynamic = 'force-dynamic';
+import { Card } from '@/components';
 
 export default function Home() {
   return (

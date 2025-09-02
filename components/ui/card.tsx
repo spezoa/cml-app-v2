@@ -3,123 +3,90 @@
 import * as React from 'react';
 import Link from 'next/link';
 
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
+function cn(...c: Array<string | false | null | undefined>) {
+  return c.filter(Boolean).join(' ');
 }
 
 type BaseDivProps = React.HTMLAttributes<HTMLDivElement>;
 
 type ExtraProps = {
-  /** Título opcional que, si existe, renderiza un header uniforme */
   title?: string;
-  /** Descripción opcional bajo el título */
   description?: string;
-  /** Si existe y no está disabled, el Card se vuelve clickable con <Link> */
-  href?: string;
-  /** Texto del CTA en el footer (si se usa como tile) */
-  ctaLabel?: string;
-  /** Ícono opcional a la izquierda del título */
   icon?: React.ReactNode;
-  /** Deshabilita interacción y link, muestra estilo atenuado */
+  href?: string;
+  ctaLabel?: string;
   disabled?: boolean;
 };
 
-export type CardProps = BaseDivProps & ExtraProps;
-
 const baseCard =
-  'group rounded-2xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-900/60';
-const headerCls = 'p-4 md:p-6 border-b border-gray-100 dark:border-gray-800';
-const contentCls = 'p-4 md:p-6';
-const footerCls = 'p-4 md:p-6 border-t border-gray-100 dark:border-gray-800';
-const titleCls = 'text-base font-semibold tracking-tight';
-const descCls = 'text-sm text-gray-600 dark:text-gray-400';
+  'rounded-2xl border border-border bg-card text-card-foreground shadow-sm overflow-hidden';
+const hover =
+  'transition-colors hover:bg-accent hover:text-accent-foreground';
+const headerCls = 'px-5 sm:px-6 pt-5 sm:pt-6';
+const bodyCls = 'px-5 sm:px-6 pb-5 sm:pb-6';
+const footerCls = 'px-5 sm:px-6 py-3 border-t border-border/60 text-sm';
 
-export function Card(props: CardProps) {
-  const {
-    className,
-    title,
-    description,
-    href,
-    ctaLabel,
-    icon,
-    disabled,
-    children,
-    ...rest
-  } = props;
+export function CardHeader({ className, ...rest }: BaseDivProps) {
+  return <div className={cn(headerCls, className)} {...rest} />;
+}
+export function CardContent({ className, ...rest }: BaseDivProps) {
+  return <div className={cn(bodyCls, className)} {...rest} />;
+}
+export function CardFooter({ className, ...rest }: BaseDivProps) {
+  return <div className={cn(footerCls, className)} {...rest} />;
+}
+export function CardTitle({ className, ...rest }: BaseDivProps) {
+  return <h3 className={cn('text-base font-semibold', className)} {...rest} />;
+}
+export function CardDescription({ className, ...rest }: BaseDivProps) {
+  return <p className={cn('text-sm text-muted-foreground', className)} {...rest} />;
+}
 
-  const isClickable = Boolean(href) && !disabled;
-
+/** Card contenedor que también puede actuar como tile de navegación */
+export function Card({
+  className,
+  title,
+  description,
+  icon,
+  href,
+  ctaLabel,
+  disabled,
+  children,
+  ...rest
+}: BaseDivProps & ExtraProps) {
   const Inner = (
     <div
-      className={cn(
-        baseCard,
-        disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
-        className
-      )}
-      aria-disabled={disabled ? true : undefined}
+      className={cn(baseCard, !disabled && hover, disabled && 'opacity-60 pointer-events-none', className)}
+      aria-disabled={disabled || undefined}
       {...rest}
     >
       {(title || description || icon) && (
-        <div className={headerCls}>
+        <CardHeader>
           <div className="flex items-center gap-3">
             {icon && <div className="text-xl">{icon}</div>}
             <div className="min-w-0">
-              {title && <h3 className={titleCls}>{title}</h3>}
-              {description && <p className={descCls}>{description}</p>}
+              {title && <CardTitle className="truncate">{title}</CardTitle>}
+              {description && <CardDescription className="line-clamp-2">{description}</CardDescription>}
             </div>
           </div>
-        </div>
-      )}
+        </CardHeader>
 
-      {(children || (!title && !description)) && (
-        <div className={contentCls}>{children}</div>
-      )}
+        {children && <CardContent>{children}</CardContent>}
 
-      {(ctaLabel || href) && (
-        <div className={footerCls}>
-          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-            <span>{ctaLabel ?? (disabled ? 'No disponible' : 'Abrir')}</span>
-            {!disabled && <span className="transition-transform group-hover:translate-x-0.5">→</span>}
-          </div>
-        </div>
-      )}
-    </div>
+        {(href || ctaLabel) && (
+          <CardFooter className="flex items-center justify-between">
+            <span className="text-muted-foreground">{ctaLabel || 'Abrir'}</span>
+            <span aria-hidden>→</span>
+          </CardFooter>
+        )}
+      </div>
   );
 
-  // Si es clickable, envolvemos en Link. Si está deshabilitado, NO hay Link.
-  if (isClickable) {
-    return (
-      <Link href={href!} className="block no-underline">
-        {Inner}
-      </Link>
-    );
-  }
-
-  return Inner;
-}
-
-// Primitivas por si las usas de forma manual
-export function CardHeader(props: React.HTMLAttributes<HTMLDivElement>) {
-  const { className, ...rest } = props;
-  return <div className={cn(headerCls, className)} {...rest} />;
-}
-
-export function CardTitle(props: React.HTMLAttributes<HTMLHeadingElement>) {
-  const { className, ...rest } = props;
-  return <h3 className={cn(titleCls, className)} {...rest} />;
-}
-
-export function CardDescription(props: React.HTMLAttributes<HTMLParagraphElement>) {
-  const { className, ...rest } = props;
-  return <p className={cn(descCls, className)} {...rest} />;
-}
-
-export function CardContent(props: React.HTMLAttributes<HTMLDivElement>) {
-  const { className, ...rest } = props;
-  return <div className={cn(contentCls, className)} {...rest} />;
-}
-
-export function CardFooter(props: React.HTMLAttributes<HTMLDivElement>) {
-  const { className, ...rest } = props;
-  return <div className={cn(footerCls, className)} {...rest} />;
+  return href && !disabled ? (
+    <Link href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl">
+      {Inner}
+    </Link>
+  ) : (
+    Inner
+  );
 }
